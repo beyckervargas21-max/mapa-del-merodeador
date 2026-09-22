@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>El Mapa del Merodeador</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;700&family=IM+Fell+English:ital@0;1&display=swap');
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      background: #0d0a07;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'IM Fell English', serif;
+      color: #2c1a0e;
+      padding: 20px;
+    }
+
+    .mapa {
+      position: relative;
+      width: 100%;
+      max-width: 420px;
+      background: linear-gradient(135deg, #e8d5a3 0%, #d4c08a 100%);
+      border: 10px solid #5c3d2e;
+      border-radius: 6px;
+      box-shadow: 0 0 0 4px #3d2817, 0 15px 40px rgba(0,0,0,0.7);
+      padding: 40px 30px;
+      text-align: center;
+      transition: all 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .mapa.abierto {
+      max-width: 780px;
+      padding: 45px 40px 50px;
+    }
+
+    h1 {
+      font-family: 'Cinzel', serif;
+      font-size: 2rem;
+      color: #3d2817;
+      margin-bottom: 8px;
+      letter-spacing: 2px;
+    }
+
+    .mapa.abierto h1 {
+      font-size: 2.3rem;
+    }
+
+    .subtitulo {
+      font-style: italic;
+      font-size: 1rem;
+      color: #5c3d2e;
+      margin-bottom: 25px;
+      line-height: 1.5;
+    }
+
+    .password-box p {
+      margin-bottom: 12px;
+      font-size: 1.1rem;
+    }
+
+    input[type="text"] {
+      width: 100%;
+      max-width: 400px;
+      padding: 13px 18px;
+      font-size: 1.1rem;
+      background: rgba(255, 248, 230, 0.8);
+      border: 2px solid #8b5a2b;
+      border-radius: 6px;
+      color: #2c1a0e;
+      text-align: center;
+      font-family: 'IM Fell English', serif;
+      outline: none;
+    }
+
+    input:focus {
+      border-color: #5c3d2e;
+      box-shadow: 0 0 10px rgba(139, 90, 43, 0.35);
+    }
+
+    .botones {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+
+    button {
+      padding: 11px 26px;
+      font-size: 1.05rem;
+      background: #5c3d2e;
+      color: #f4e4bc;
+      border: 2px solid #3d2817;
+      border-radius: 6px;
+      cursor: pointer;
+      font-family: 'Cinzel', serif;
+      transition: 0.3s;
+    }
+
+    button:hover {
+      background: #7a523c;
+    }
+
+    #btnMicrofono {
+      background: #3d2817;
+    }
+
+    #btnMicrofono.escuchando {
+      background: #8b1a1a;
+    }
+
+    .estado-voz, .error {
+      margin-top: 10px;
+      font-size: 0.95rem;
+      min-height: 22px;
+      font-style: italic;
+    }
+
+    .error {
+      color: #8b1a1a;
+    }
+
+    /* CARTA */
+    .carta-contenedor {
+      margin-top: 30px;
+      opacity: 0;
+      max-height: 0;
+      overflow: hidden;
+      transition: all 0.9s ease 0.35s;
+    }
+
+    .carta-contenedor.visible {
+      opacity: 1;
+      max-height: 1300px;
+    }
+
+    .carta {
+      background: #f8f1e3;
+      border: 2px solid #c4a35a;
+      border-radius: 4px;
+      padding: 38px 30px 28px;
+      position: relative;
+      text-align: left;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+    }
+
+    .sello {
+      position: absolute;
+      top: -18px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 42px;
+      height: 42px;
+      background: #8b1a1a;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #f4e4bc;
+      font-family: 'Cinzel', serif;
+      font-weight: bold;
+      border: 2px solid #5c1010;
+      box-shadow: 0 3px 8px rgba(0,0,0,0.3);
+    }
+
+    .carta h2 {
+      font-family: 'Cinzel', serif;
+      font-size: 1.4rem;
+      color: #3d2817;
+      text-align: center;
+      margin: 6px 0 18px;
+    }
+
+    .carta .mensaje {
+      font-size: 1.15rem;
+      line-height: 1.75;
+      white-space: pre-line;
+      color: #2c1a0e;
+    }
+
+    /* RAMO DE FLORES */
+    .ramo {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      align-items: center;
+      gap: 7px;
+      max-width: 300px;
+      margin: 24px auto 0;
+    }
+
+    .flor {
+      width: 90px;
+      height: 90px;
+      object-fit: cover;
+      border-radius: 50%;
+      border: none;
+      background: transparent;
+      box-shadow: 0 3px 8px rgba(0, 0, 0, 0);
+    }
+
+    .flor:nth-child(1) { width: 60px; height: 60px; transform: rotate(-11deg); }
+    .flor:nth-child(2) { width: 78px; height: 78px; transform: rotate(7deg); }
+    .flor:nth-child(3) { width: 56px; height: 56px; transform: rotate(-15deg); }
+    .flor:nth-child(4) { width: 72px; height: 72px; transform: rotate(10deg); }
+    .flor:nth-child(5) { width: 64px; height: 64px; transform: rotate(-6deg); }
+    .flor:nth-child(6) { width: 70px; height: 70px; transform: rotate(12deg); }
+
+    .firma-carta {
+      margin-top: 22px;
+      text-align: right;
+      font-style: italic;
+      color: #5c3d2e;
+      font-size: 1rem;
+    }
+
+    .firma {
+      margin-top: 28px;
+      font-size: 0.95rem;
+      color: #6b4c35;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+
+   <audio id="musica">
+  <source src="musica.mp3" type="audio/mpeg">
+
+</audio>
+
+  <div class="mapa" id="mapa">
+    <h1>El Mapa del Merodeador</h1>
+    <p class="subtitulo">
+      Messrs. Moony, Wormtail, Padfoot &amp; Prongs<br>
+      se enorgullecen de presentar<br>
+      el Mapa del Merodeador
+    </p>
+
+    <div class="password-box">
+      <p>Di la contraseña (o escríbela)...</p>
+      <input type="text" id="password" placeholder="Escribe o di la contraseña..." autocomplete="off">
+      
+      <div class="botones">
+        <button type="button" onclick="revelar()">Revelar</button>
+        <button type="button" id="btnMicrofono" onclick="iniciarVoz()">🎤 Decir contraseña</button>
+      </div>
+
+      <p class="estado-voz" id="estadoVoz"></p>
+      <p class="error" id="error"></p>
+    </div>
+
+    <!-- CARTA -->
+    <div class="carta-contenedor" id="cartaContenedor">
+      <div class="carta">
+        <div class="sello">M</div>
+        <h2>Carta Secreta</h2>
+        <div class="mensaje" id="mensajeCarta"></div>
+        <div class="ramo" id="ramoFlores"></div>
+        <div class="firma-carta" id="firmaCarta"></div>
+      </div>
+    </div>
+
+    <p class="firma">— Moony, Wormtail, Padfoot y Prongs</p>
+  </div>
+
+  <script>
+    // ============================================
+    //          CAMBIA SOLO ESTAS 4 COSAS
+    // ============================================
+
+    // 1. La contraseña
+    const CONTRASEÑA = "juro solemnemente que mis intenciones no son buenas";
+
+    // 2. El mensaje de la carta
+    const MENSAJE_DE_LA_CARTA = `Querido merodeador,este es tu mensaje oculto:
+
+
+¨Es lo que somos en los momentos difíciles,lo que realmente importa...¨
+Y tú,siempre demuestras ser de las mejores personas mágicas,que cualquier muggle como yo,podría conocer.
+Nunca dejes de sonreir,ni dejes de ser quien eres,
+recuerda que eres una maravillosa persona. Sabes que tienes todo mi cariño,
+aunque soy malo para expresarme,sabes que te acompañaría a buscar los Horrocruxes y pelear contra Voldemort sin miedo alguno.
+NUNCA CAMBIES,SIGUE SIENDO EL MOTIVO PARA SEGUIR CREYENDO EN LA MAGIA Y GRACIAS POR EXISTIR.
+
+Aunque son virtuales,llevan el mismo pensamiento que unas reales.
+
+<img src="harry potter.jpg" alt="Imagen secreta" style="max-width: 100; margin-top: 30px auto 0; border-radius: 8px; border: 1px solid #8b5a2b; display: block">
+
+
+
+`;
+
+    // 3. La firma de la carta
+    const FIRMA_DE_LA_CARTA = "— Con cariño";
+
+    // 4. El nombre de tu imagen de la flor (debe estar en la misma carpeta)
+    const IMAGEN_FLOR = "amarillo.jpg";   // ← cámbialo por el nombre real de tu archivo
+
+    // ============================================
+
+    
+    function revelar() {
+      const input = document.getElementById("password");
+      const mapa = document.getElementById("mapa");
+      const cartaContenedor = document.getElementById("cartaContenedor");
+      const mensajeCarta = document.getElementById("mensajeCarta");
+      const firmaCarta = document.getElementById("firmaCarta");
+      const ramo = document.getElementById("ramoFlores");
+      const error = document.getElementById("error");
+
+      const intento = input.value.trim().toLowerCase();
+
+      if (intento === CONTRASEÑA.toLowerCase()) {
+        // Abrir mapa
+        mapa.classList.add("abierto");
+
+        // Reproducir música
+const musica = document.getElementById("musica");
+musica.currentTime = 0;  // Para que empiece desde el inicio
+musica.play();
+
+        // Poner texto y firma
+        mensajeCarta.innerHTML = MENSAJE_DE_LA_CARTA.trim();
+        firmaCarta.textContent = FIRMA_DE_LA_CARTA;
+
+        // Crear el ramo de flores
+        ramo.innerHTML = "";
+        for (let i = 0; i < 6; i++) {
+          const img = document.createElement("img");
+          img.src = IMAGEN_FLOR;
+          img.alt = "Flor";
+          img.className = "flor";
+          ramo.appendChild(img);
+        }
+
+        // Mostrar la carta
+        cartaContenedor.classList.add("visible");
+
+        error.textContent = "";
+        input.style.borderColor = "#5c8b3d";
+      } else {
+        mapa.classList.remove("abierto");
+        cartaContenedor.classList.remove("visible");
+        error.textContent = "Esa no es la contraseña correcta, merodeador...";
+        input.style.borderColor = "#8b1a1a";
+        setTimeout(() => input.style.borderColor = "#8b5a2b", 900);
+      }
+    }
+
+    // Enter también funciona
+    document.getElementById("password").addEventListener("keyup", function(e) {
+      if (e.key === "Enter") revelar();
+    });
+
+    // ========== RECONOCIMIENTO DE VOZ ==========
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let reconocimiento = null;
+    let escuchando = false;
+
+    if (SpeechRecognition) {
+      reconocimiento = new SpeechRecognition();
+      reconocimiento.lang = "es-ES";
+      reconocimiento.continuous = false;
+      reconocimiento.interimResults = false;
+
+      reconocimiento.onstart = () => {
+        escuchando = true;
+        document.getElementById("btnMicrofono").classList.add("escuchando");
+        document.getElementById("btnMicrofono").textContent = "🔴 Escuchando...";
+        document.getElementById("estadoVoz").textContent = "Habla ahora...";
+        document.getElementById("error").textContent = "";
+      };
+
+      reconocimiento.onresult = (event) => {
+        const texto = event.results[0][0].transcript.trim().toLowerCase();
+        document.getElementById("password").value = texto;
+        document.getElementById("estadoVoz").textContent = `Has dicho: "${texto}"`;
+        setTimeout(revelar, 500);
+      };
+
+      reconocimiento.onerror = () => {
+        document.getElementById("error").textContent = "No se pudo escuchar. Inténtalo de nuevo.";
+        detenerEscucha();
+      };
+
+      reconocimiento.onend = () => detenerEscucha();
+    }
+
+    function iniciarVoz() {
+      if (!reconocimiento) {
+        document.getElementById("error").textContent = "Tu navegador no soporta reconocimiento de voz. Usa Chrome o Edge.";
+        return;
+      }
+      if (escuchando) {
+        reconocimiento.stop();
+        return;
+      }
+      try {
+        reconocimiento.start();
+      } catch (e) {
+        document.getElementById("error").textContent = "No se pudo iniciar el micrófono.";
+      }
+    }
+
+    function detenerEscucha() {
+      escuchando = false;
+      const btn = document.getElementById("btnMicrofono");
+      btn.classList.remove("escuchando");
+      btn.textContent = "🎤 Decir contraseña";
+    }
+  </script>
+</body>
+</html>
